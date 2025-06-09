@@ -86,6 +86,7 @@ export default function SignUpFrom() {
       console.log(result);
       if ((result.status = "complete")) {
         await setActive({ session: result.createdSessionId });
+        console.log("succssssssssssssssssssssD");
         router.push("/dashboard");
       } else {
         setVerificationError("verification incomplete");
@@ -102,14 +103,47 @@ export default function SignUpFrom() {
     }
   };
 
-  if (verifying) {
-    return <div>This is OTP field</div>;
-  }
-
   return (
     <Card className="w-full max-w-sm">
       {verifying ? (
-        <div>This is OTP field</div>
+        <>
+          <CardHeader>
+            <CardTitle>Account Verification</CardTitle>
+            <CardDescription>
+              Enter code sent to your email below to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleVerificationSubmit}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                  <div className="flex items-center">
+                    <Label htmlFor="code">Verification Code</Label>
+                    <a
+                      href="#"
+                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    >
+                      Resend Code
+                    </a>
+                  </div>
+                  <Input
+                    id="code"
+                    type="text"
+                    required
+                    value={verificationCode}
+                    maxLength={6}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                  />
+                </div>
+              </div>
+              <CardFooter className="flex-col gap-2 pt-5">
+                <Button type="submit" className="w-full">
+                  Confirm
+                </Button>
+              </CardFooter>
+            </form>
+          </CardContent>
+        </>
       ) : (
         <>
           <CardHeader>
@@ -153,6 +187,7 @@ export default function SignUpFrom() {
                     type="password"
                     required
                     {...register("password")}
+                    maxLength={8}
                   />
                   <div className="text-xs text-red-400 font-semibold">
                     {errors.password?.message}
@@ -173,6 +208,7 @@ export default function SignUpFrom() {
                     type="password"
                     required
                     {...register("passwordConfirmation")}
+                    maxLength={8}
                   />
                   <div className="text-xs text-red-400 font-semibold">
                     {errors.passwordConfirmation?.message}
