@@ -86,7 +86,6 @@ export default function SignUpFrom() {
       console.log(result);
       if ((result.status = "complete")) {
         await setActive({ session: result.createdSessionId });
-        console.log("succssssssssssssssssssssD");
         router.push("/dashboard");
       } else {
         setVerificationError("verification incomplete");
