@@ -51,7 +51,7 @@ export default function SignUpFrom() {
     try {
       await signUp?.create({
         emailAddress: data?.email,
-        password: data.password,
+        password: data?.password,
       });
       await signUp?.prepareEmailAddressVerification({
         strategy: "email_code",
