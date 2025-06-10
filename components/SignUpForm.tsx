@@ -6,7 +6,7 @@ import { signUpSchema } from "@/schemas/signUpSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSignUp } from "@clerk/nextjs";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import {
@@ -24,6 +24,8 @@ export default function SignUpFrom() {
   const { isLoaded, setActive, signUp } = useSignUp();
 
   const router = useRouter();
+  const params = useSearchParams();
+  const redirectURL = params.get("redirect");
 
   const [verifying, setVerifying] = useState<boolean>(false);
   const [submitting, setIsSubmitting] = useState<boolean>(false);
@@ -84,9 +86,9 @@ export default function SignUpFrom() {
         code: verificationCode,
       });
       console.log(result);
-      if ((result.status = "complete")) {
+      if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        router.push("/dashboard");
+        router.push(redirectURL || "/dashboard");
       } else {
         setVerificationError("verification incomplete");
         console.log("verification incomplete");
@@ -146,12 +148,14 @@ export default function SignUpFrom() {
       ) : (
         <>
           <CardHeader>
-            <CardTitle>Login to your account</CardTitle>
+            <CardTitle>Create New account</CardTitle>
             <CardDescription>
               Enter your email below to login to your account
             </CardDescription>
             <CardAction>
-              <Button variant="link">Sign Up</Button>
+              <Button onClick={() => router.push("/sign-in")} variant="link">
+                Sign In
+              </Button>
             </CardAction>
           </CardHeader>
           <CardContent>

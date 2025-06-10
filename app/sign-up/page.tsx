@@ -1,12 +1,12 @@
-import SignInForm from "@/components/SignInForm";
+import SignUpFrom from "@/components/SignUpForm";
 import React from "react";
 
-function page() {
+const Page = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <SignInForm />
+      <SignUpFrom />
     </div>
   );
-}
+};
 
-export default page;
+export default Page;
