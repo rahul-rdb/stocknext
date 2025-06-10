@@ -81,106 +81,50 @@ export function ChartAreaLinear() {
   const [marketStatus, setMarketStatus] = useState(getMarketStatus());
   const [error, setError] = useState<string | null>(null);
 
-  // Update market status every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMarketStatus(getMarketStatus());
-    }, 60000);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const API_KEY = "d0l1iv9r01qhb025nmbgd0l1iv9r01qhb025nmc0";
 
-    return () => clearInterval(interval);
+  useEffect(() => {
+    const socket = new WebSocket(`wss://ws.finnhub.io?token=${API_KEY}`);
+
+    socket.onopen = () => {
+      console.log("WebSocket opened");
+      socket.send(JSON.stringify({ type: "subscribe", symbol: "AAPL" }));
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "trade") {
+
+        const latestTrade = data.data[0];
+        const newPrice = latestTrade.p;
+        const newData = {
+          timestamp: new Date().toLocaleTimeString(),
+          price: newPrice,
+        };
+
+        setTrades((prevData) => {
+          const updatedData = [...prevData, newData];
+          return updatedData.slice(-30); // Keep last 30 data points
+        });
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket closed");
+    };
+
+    return () => {
+      socket.send(JSON.stringify({ type: "unsubscribe", symbol: "AAPL" }));
+      socket.close();
+    };
   }, []);
 
-  useEffect(() => {
-    let ws: WebSocket | null = null;
-    let reconnectTimeout: NodeJS.Timeout;
-
-    const connectWebSocket = () => {
-      try {
-        ws = new WebSocket(
-          "wss://ws.finnhub.io?token=d0l1iv9r01qhb025nmbgd0l1iv9r01qhb025nmc0"
-        );
-
-        ws.onopen = () => {
-          console.log("Connected to WebSocket");
-          setConnectionStatus("connected");
-          setError(null);
-          // Subscribe to AAPL stock
-          ws.send(
-            JSON.stringify({
-              type: "subscribe",
-              symbol: "AAPL",
-            })
-          );
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log("Received data:", data);
-
-            // Handle ping message
-            if (data.type === "ping") {
-              ws?.send(JSON.stringify({ type: "pong" }));
-              return;
-            }
-
-            // Handle trade data
-            if (data.type === "trade" && data.data && data.data.length > 0) {
-              const latestTrade = data.data[0];
-              const newPrice = latestTrade.p;
-              const newData = {
-                timestamp: new Date().toLocaleTimeString(),
-                price: newPrice,
-              };
-
-              setStockData((prevData) => {
-                const updatedData = [...prevData, newData];
-                return updatedData.slice(-30); // Keep last 30 data points
-              });
-
-              if (lastPrice) {
-                const change = ((newPrice - lastPrice) / lastPrice) * 100;
-                setPriceChange(change);
-              }
-              setLastPrice(newPrice);
-            }
-          } catch (error) {
-            console.error("Error parsing WebSocket data:", error);
-            setError("Error processing data");
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.error("WebSocket error:", error);
-          setConnectionStatus("disconnected");
-          setError("Connection error");
-        };
-
-        ws.onclose = () => {
-          console.log("Disconnected from WebSocket");
-          setConnectionStatus("disconnected");
-          // Attempt to reconnect after 5 seconds
-          reconnectTimeout = setTimeout(connectWebSocket, 5000);
-        };
-      } catch (error) {
-        console.error("Error creating WebSocket:", error);
-        setError("Failed to connect");
-        // Attempt to reconnect after 5 seconds
-        reconnectTimeout = setTimeout(connectWebSocket, 5000);
-      }
-    };
-
-    connectWebSocket();
-
-    // Cleanup function
-    return () => {
-      if (ws?.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: "unsubscribe", symbol: "AAPL" }));
-        ws.close();
-      }
-      clearTimeout(reconnectTimeout);
-    };
-  }, [lastPrice]);
+  console.log(trades);
 
   return (
     <Card>
@@ -219,7 +163,7 @@ export function ChartAreaLinear() {
         <ChartContainer config={chartConfig}>
           <AreaChart
             accessibilityLayer
-            data={stockData}
+            data={trades}
             margin={{
               left: 12,
               right: 12,
