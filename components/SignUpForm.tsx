@@ -42,8 +42,6 @@ export default function SignUpFrom() {
     defaultValues: { email: "", password: "", passwordConfirmation: "" },
   });
 
-  console.log(errors);
-
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     if (!isLoaded) {
       return null;
@@ -162,7 +160,7 @@ export default function SignUpFrom() {
             <form>
               <div className="flex flex-col gap-6">
                 <div className="grid gap-2">
-                  <div>{errors.email?.message}</div>
+                  <div>{errors?.email?.message}</div>
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
@@ -172,7 +170,7 @@ export default function SignUpFrom() {
                     {...register("email")}
                   />
                   <div className="text-xs text-red-400 font-semibold">
-                    {errors.email?.message}
+                    {errors?.email?.message}
                   </div>
                 </div>
                 <div className="grid gap-2">
@@ -193,7 +191,7 @@ export default function SignUpFrom() {
                     maxLength={8}
                   />
                   <div className="text-xs text-red-400 font-semibold">
-                    {errors.password?.message}
+                    {errors?.password?.message}
                   </div>
                 </div>
                 <div className="grid gap-2">
@@ -214,7 +212,7 @@ export default function SignUpFrom() {
                     maxLength={8}
                   />
                   <div className="text-xs text-red-400 font-semibold">
-                    {errors.passwordConfirmation?.message}
+                    {errors?.passwordConfirmation?.message}
                   </div>
                 </div>
               </div>
